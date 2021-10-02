@@ -1,5 +1,5 @@
 import esbuild from 'esbuild-wasm';
-import CacheService from '../services/CacheService';
+import PackageService from '../services/PackageService';
 
 const UnpkgPathGenerator = (source: string) => {
   return {
@@ -37,7 +37,7 @@ const UnpkgPathGenerator = (source: string) => {
           };
         }
 
-        return await CacheService.getPackage(args.path);
+        return await PackageService.getPackage(args.path);
       });
     },
   };
