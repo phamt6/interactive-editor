@@ -1,26 +1,53 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState, useRef } from 'react';
+import * as esbuild from 'esbuild-wasm';
 
-function App() {
+const App: React.FC = () => {
+  const [source, setSource] = useState<string>('');
+  const [bundled, setBundled] = useState<string>();
+  const [error, setError] = useState<any>(null);
+
+  const initializeEsbuild = async () => {
+    try {
+      await esbuild.initialize({
+        wasmURL: './esbuild.wasm',
+      });
+    } catch (err) {
+      setError(err);
+    }
+  };
+
+  useEffect(() => {
+    initializeEsbuild();
+  }, []);
+
+  const handleSubmitBtn = async (event: React.MouseEvent) => {
+    event.preventDefault();
+    if (error) return; // Don't do anything if esbuild failed to init
+
+    const bundledSource: esbuild.TransformResult = await esbuild.transform(
+      source,
+      {
+        loader: 'ts',
+      }
+    );
+
+    setBundled(bundledSource.code);
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <textarea
+        value={source}
+        onChange={(event) => setSource(event.currentTarget.value)}
+      ></textarea>
+
+      <button type="submit" onClick={(event) => handleSubmitBtn(event)}>
+        Execute Code
+      </button>
+
+      <pre id="bundled-code">{bundled}</pre>
     </div>
   );
-}
+};
 
 export default App;
