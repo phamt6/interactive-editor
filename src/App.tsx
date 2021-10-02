@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as esbuild from 'esbuild-wasm';
+import UnpkgPathGenerator from './esbuild-plugins/unpkg-path-generator';
 
 const App: React.FC = () => {
   const [source, setSource] = useState<string>('');
@@ -24,14 +25,25 @@ const App: React.FC = () => {
     event.preventDefault();
     if (error) return; // Don't do anything if esbuild failed to init
 
+    const options: esbuild.TransformOptions = {
+      loader: 'ts',
+    };
+
     const bundledSource: esbuild.TransformResult = await esbuild.transform(
       source,
-      {
-        loader: 'ts',
-      }
+      options
     );
 
-    setBundled(bundledSource.code);
+    const result = await esbuild.build({
+      entryPoints: ['index.js'],
+      bundle: true,
+      write: false,
+      plugins: [UnpkgPathGenerator(source)],
+    });
+
+    console.log(result);
+
+    setBundled(result.outputFiles[0].text);
   };
 
   return (
