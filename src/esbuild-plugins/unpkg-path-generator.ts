@@ -1,11 +1,11 @@
-import axios from 'axios';
-import esbuild from 'esbuild-wasm'
+import esbuild from 'esbuild-wasm';
+import CacheService from '../services/CacheService';
 
 const UnpkgPathGenerator = (source: string) => {
   return {
     name: 'Get unpkg Path',
     setup: (build: esbuild.PluginBuild) => {
-      build.onResolve({ filter: /.*/ }, async (args: any) => {
+      build.onResolve({ filter: /.*/ }, (args: any) => {
         console.log('onResolve', args);
         if (args.path === 'index.js') {
           return { path: args.path, namespace: 'a' };
@@ -37,16 +37,10 @@ const UnpkgPathGenerator = (source: string) => {
           };
         }
 
-        const { data, request } = await axios.get(args.path);
-
-        return {
-          loader: 'jsx',
-          contents: data,
-          resolveDir: new URL('./', request.responseURL).pathname,
-        };
+        return await CacheService.getPackage(args.path);
       });
-    }
-  }
-}
+    },
+  };
+};
 
 export default UnpkgPathGenerator;

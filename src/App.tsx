@@ -25,14 +25,14 @@ const App: React.FC = () => {
     event.preventDefault();
     if (error) return; // Don't do anything if esbuild failed to init
 
-    const options: esbuild.TransformOptions = {
-      loader: 'ts',
-    };
+    // const options: esbuild.TransformOptions = {
+    //   loader: 'ts',
+    // };
 
-    const bundledSource: esbuild.TransformResult = await esbuild.transform(
-      source,
-      options
-    );
+    // const bundledSource: esbuild.TransformResult = await esbuild.transform(
+    //   source,
+    //   options
+    // );
 
     const result = await esbuild.build({
       entryPoints: ['index.js'],
