@@ -4,34 +4,33 @@ import CleanCSS from 'clean-css';
 
 class PackageService {
   private cacheDB: LocalForage;
-  private cssPkg: boolean = false;
+  private cleanCSS: CleanCSS.MinifierOutput;
 
   constructor() {
     this.cacheDB = localforage.createInstance({
       name: 'response-cache',
     });
-  }
-
-  private sanitizeCSS(css: string): string {
-    const cleanCSS = new CleanCSS({
+    this.cleanCSS = new CleanCSS({
       level: {
         1: {
           specialComments: '0',
         },
       },
     });
+  }
 
+  private sanitizeCSS(css: string): string {
     css = css.replace(/"/g, '\\"').replace(/'/g, "\\'");
 
-    const { styles } = cleanCSS.minify(css);
+    const { styles } = this.cleanCSS.minify(css);
     return styles;
   }
 
-  private makeContents(contents: string): string {
-    if (this.cssPkg) {
+  private makeContents(contents: string, isCss: Boolean): string {
+    if (isCss) {
       return `
         const stylesheet = document.createElement('style');
-        stylesheet.innerText = "${this.sanitizeCSS(contents)}";
+        stylesheet.innerText = '${this.sanitizeCSS(contents)}';
         document.head.appendChild(stylesheet);
       `;
     }
@@ -39,13 +38,15 @@ class PackageService {
     return contents;
   }
 
-  async getPackage(pkg: string): Promise<OnLoadResult> {
+  public async getPackage(pkg: string): Promise<OnLoadResult> {
     const cachedPkg = await this.cacheDB.getItem<OnLoadResult>(pkg);
     if (cachedPkg) return cachedPkg;
 
     const resp = await fetch(pkg);
-    this.cssPkg = Boolean(pkg.match(/.css$/));
-    const contents = this.makeContents(await resp.text());
+    const contents = this.makeContents(
+      await resp.text(),
+      Boolean(pkg.match(/.css$/))
+    );
 
     const loadedPkg: OnLoadResult = {
       loader: 'jsx',

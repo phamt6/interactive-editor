@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import * as esbuild from 'esbuild-wasm';
 import UnpkgPathGenerator from './esbuild-plugins/unpkg-path-generator';
+import CodePreview from './components/code-preview';
 
 const App: React.FC = () => {
   const [source, setSource] = useState<string>('');
-  const [bundled, setBundled] = useState<string>();
   const [error, setError] = useState<any>(null);
 
   const initializeEsbuild = async () => {
@@ -25,25 +25,17 @@ const App: React.FC = () => {
     event.preventDefault();
     if (error) return; // Don't do anything if esbuild failed to init
 
-    // const options: esbuild.TransformOptions = {
-    //   loader: 'ts',
-    // };
-
-    // const bundledSource: esbuild.TransformResult = await esbuild.transform(
-    //   source,
-    //   options
-    // );
-
-    const result = await esbuild.build({
+    const builtSrc = await esbuild.build({
       entryPoints: ['index.js'],
       bundle: true,
       write: false,
       plugins: [UnpkgPathGenerator(source)],
     });
 
-    console.log(result);
+    const iframeEl: HTMLIFrameElement | null =
+      document.querySelector('#code-preview');
 
-    setBundled(result.outputFiles[0].text);
+    iframeEl?.contentWindow?.postMessage(builtSrc.outputFiles[0].text, '*');
   };
 
   return (
@@ -57,7 +49,7 @@ const App: React.FC = () => {
         Execute Code
       </button>
 
-      <pre id="bundled-code">{bundled}</pre>
+      <CodePreview />
     </div>
   );
 };
