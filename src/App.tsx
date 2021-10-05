@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import * as esbuild from 'esbuild-wasm';
 import UnpkgPathGenerator from './esbuild-plugins/unpkg-path-generator';
-import CodePreview from './components/code-preview';
+import CodePreview from './components/CodePreview';
+import './App.css';
+
+import CodePanel from './components/CodePanel';
+import Split from 'react-split';
 
 const App: React.FC = () => {
-  const [source, setSource] = useState<string>('');
+  const [javascript, setJavascript] = useState<string>('');
+  const [html, setHtml] = useState<string>('');
+  const [css, setCss] = useState<string>('');
+
   const [error, setError] = useState<any>(null);
 
   const initializeEsbuild = async () => {
@@ -13,6 +20,7 @@ const App: React.FC = () => {
         wasmURL: './esbuild.wasm',
       });
     } catch (err) {
+      console.log(`An error has occurred while initializing esbuild: ${err}`);
       setError(err);
     }
   };
@@ -29,7 +37,7 @@ const App: React.FC = () => {
       entryPoints: ['index.js'],
       bundle: true,
       write: false,
-      plugins: [UnpkgPathGenerator(source)],
+      plugins: [UnpkgPathGenerator(javascript)],
     });
 
     const iframeEl: HTMLIFrameElement | null =
@@ -40,16 +48,32 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      <textarea
-        value={source}
-        onChange={(event) => setSource(event.currentTarget.value)}
-      ></textarea>
+      <Split
+        direction="vertical"
+        sizes={[50, 10, 40]}
+        style={{ height: '100vh' }}
+      >
+        <Split
+          className="flex"
+          direction="horizontal"
+          sizes={[33, 33, 33]}
+          minSize={[50, 50, 50]}
+        >
+          <CodePanel
+            sourceType="javascript"
+            source={javascript}
+            setSource={setJavascript}
+          />
+          <CodePanel sourceType="css" source={css} setSource={setCss} />
+          <CodePanel sourceType="html" source={html} setSource={setHtml} />
+        </Split>
 
-      <button type="submit" onClick={(event) => handleSubmitBtn(event)}>
-        Execute Code
-      </button>
+        <button type="submit" onClick={(event) => handleSubmitBtn(event)}>
+          Execute Code
+        </button>
 
-      <CodePreview />
+        <CodePreview html={html} css={css} />
+      </Split>
     </div>
   );
 };

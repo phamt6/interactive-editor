@@ -1,20 +1,32 @@
 import React from 'react';
 
-const CodePreview: React.FC = () => {
+interface CodePreviewProps {
+  html: string;
+  css: string;
+}
+
+const CodePreview: React.FC<CodePreviewProps> = ({ html, css }) => {
   const iframeOptions =
     'allow-downloads allow-forms allow-modals allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts allow-top-navigation-by-user-activation';
 
   const htmlStarter = `
     <html>
       <head>
+        <style>${css}</style>
         <script>
           window.addEventListener('message', (event) => {
-            eval(event.data);
+            try {
+              eval(event.data);
+            } catch (err) {
+              document.write(err);
+              console.error(err);
+            }
           }, false);
         </script>
       </head>
       <body>
         <div id="root"></div>
+        ${html}
       </body>
     </html>
   `;
