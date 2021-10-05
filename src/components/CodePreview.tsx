@@ -1,4 +1,5 @@
 import React from 'react';
+import './CodePreview.css';
 
 interface CodePreviewProps {
   html: string;
@@ -30,6 +31,7 @@ const CodePreview: React.FC<CodePreviewProps> = ({ html, css }) => {
       </body>
     </html>
   `;
+
   return (
     <iframe
       id="code-preview"
