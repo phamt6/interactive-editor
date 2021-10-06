@@ -5,15 +5,14 @@ const UnpkgPathGenerator = (source: string) => {
   return {
     name: 'Get unpkg Path',
     setup: (build: esbuild.PluginBuild) => {
-      build.onResolve({ filter: /.*/ }, (args: any) => {
-        console.log('onResolve', args);
+      build.onResolve({ filter: /.*/ }, (args: esbuild.OnResolveArgs) => {
         if (args.path === 'index.js') {
-          return { path: args.path, namespace: 'a' };
+          return { path: args.path, namespace: 'unpkg-gen' };
         }
 
         if (args.path.includes('./') || args.path.includes('../')) {
           return {
-            namespace: 'a',
+            namespace: 'unpkg-gen',
             path: new URL(
               args.path,
               'https://unpkg.com' + args.resolveDir + '/'
@@ -22,12 +21,12 @@ const UnpkgPathGenerator = (source: string) => {
         }
 
         return {
-          namespace: 'a',
+          namespace: 'unpkg-gen',
           path: `https://unpkg.com/${args.path}`,
         };
       });
 
-      build.onLoad({ filter: /.*/ }, async (args: any) => {
+      build.onLoad({ filter: /.*/ }, async (args: esbuild.OnLoadArgs) => {
         console.log('onLoad', args);
 
         if (args.path === 'index.js') {

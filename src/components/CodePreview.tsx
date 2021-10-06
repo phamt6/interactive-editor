@@ -9,6 +9,14 @@ const CodePreview: React.FC = () => {
     <html>
       <head>
         <script>
+          window.addEventListener('error', (event) => {
+            event.preventDefault();
+            const errorMessage = document.createElement('div');
+            errorMessage.innerText = event.error;
+            document.body.appendChild(errorMessage);
+            console.error(event.error);
+          })
+
           window.addEventListener('message', ({ data }) => {
             if (data.event_id === 'bundled-js') {
               try {
