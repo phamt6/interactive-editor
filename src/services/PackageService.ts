@@ -39,10 +39,10 @@ class PackageService {
   }
 
   public async getPackage(pkg: string): Promise<OnLoadResult> {
-    const cachedPkg = await this.cacheDB.getItem<OnLoadResult>(pkg);
+    const cachedPkg = await this.cacheDB.getItem<OnLoadResult | null>(pkg);
     if (cachedPkg) return cachedPkg;
 
-    const resp = await fetch(pkg);
+    const resp = await fetch(pkg); // pkg = unpkg.com/react
     const contents = this.makeContents(
       await resp.text(),
       Boolean(pkg.match(/.css$/))
